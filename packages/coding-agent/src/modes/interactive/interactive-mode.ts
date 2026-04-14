@@ -759,9 +759,9 @@ export class InteractiveMode {
 	private async checkTmuxKeyboardSetup(): Promise<string | undefined> {
 		if (!process.env.TMUX) return undefined;
 
-		const runTmuxShow = (option: string): Promise<string | undefined> => {
+		const runTmuxShowServerOptions = (): Promise<string | undefined> => {
 			return new Promise((resolve) => {
-				const proc = spawn("tmux", ["show", "-gv", option], {
+				const proc = spawn("tmux", ["show-options", "-s"], {
 					stdio: ["ignore", "pipe", "ignore"],
 				});
 				let stdout = "";
@@ -779,25 +779,32 @@ export class InteractiveMode {
 				});
 				proc.on("close", (code) => {
 					clearTimeout(timer);
-					resolve(code === 0 ? stdout.trim() : undefined);
+					resolve(code === 0 ? stdout : undefined);
 				});
 			});
 		};
 
-		const [extendedKeys, extendedKeysFormat] = await Promise.all([
-			runTmuxShow("extended-keys"),
-			runTmuxShow("extended-keys-format"),
-		]);
+		const output = await runTmuxShowServerOptions();
 
 		// If we couldn't query tmux (timeout, sandbox, etc.), don't warn
-		if (extendedKeys === undefined) return undefined;
+		if (output === undefined) return undefined;
 
-		if (extendedKeys !== "on" && extendedKeys !== "always") {
-			return "tmux extended-keys is off. Modified Enter keys may not work. Add `set -g extended-keys on` to ~/.tmux.conf and restart tmux.";
+		const matchOption = (name: string): string | undefined => {
+			const match = output.match(new RegExp(`^${name}\\s+(\\S+)`, "m"));
+			return match?.[1];
+		};
+
+		const extendedKeys = matchOption("extended-keys");
+		const extendedKeysFormat = matchOption("extended-keys-format");
+		const configPaths = "~/.tmux.conf or ~/.config/tmux/tmux.conf";
+
+		// Treat missing values as unknown/unreported instead of off.
+		if (extendedKeys !== undefined && extendedKeys !== "on" && extendedKeys !== "always") {
+			return `tmux extended-keys is off. Modified Enter keys may not work. Add \`set -g extended-keys on\` to ${configPaths} and restart tmux.`;
 		}
 
-		if (extendedKeysFormat === "xterm") {
-			return "tmux extended-keys-format is xterm. Pi works best with csi-u. Add `set -g extended-keys-format csi-u` to ~/.tmux.conf and restart tmux.";
+		if ((extendedKeys === "on" || extendedKeys === "always") && extendedKeysFormat === "xterm") {
+			return `tmux extended-keys-format is xterm. Pi works best with csi-u. Add \`set -g extended-keys-format csi-u\` to ${configPaths} and restart tmux.`;
 		}
 
 		return undefined;
