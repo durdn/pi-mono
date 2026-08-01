@@ -44,6 +44,23 @@ describe("AssistantMessageComponent", () => {
 		expect(lines[lines.length - 1].startsWith(OSC133_ZONE_END + OSC133_ZONE_FINAL)).toBe(true);
 	});
 
+	test("removes leading spacing when the compact transcript setting is enabled", () => {
+		initTheme("dark");
+
+		const component = new AssistantMessageComponent(
+			createAssistantMessage([{ type: "text", text: "hello" }]),
+			false,
+			undefined,
+			"Thinking...",
+			1,
+			[],
+			true,
+		);
+		const lines = component.render(80).map((line) => stripAnsi(line));
+
+		expect(lines[0]).toContain("hello");
+	});
+
 	test("does not add OSC 133 zone markers when assistant message contains tool calls", () => {
 		initTheme("dark");
 

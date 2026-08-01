@@ -520,6 +520,21 @@ describe("SettingsManager", () => {
 		});
 	});
 
+	describe("compactTranscript", () => {
+		it("should default to false and persist enabled compact transcript spacing", async () => {
+			const manager = SettingsManager.create(projectDir, agentDir);
+
+			expect(manager.getCompactTranscript()).toBe(false);
+
+			manager.setCompactTranscript(true);
+			await manager.flush();
+
+			expect(manager.getCompactTranscript()).toBe(true);
+			const savedSettings = JSON.parse(readFileSync(join(agentDir, "settings.json"), "utf-8"));
+			expect(savedSettings.compactTranscript).toBe(true);
+		});
+	});
+
 	describe("shellCommandPrefix", () => {
 		it("should load shellCommandPrefix from settings", () => {
 			const settingsPath = join(agentDir, "settings.json");

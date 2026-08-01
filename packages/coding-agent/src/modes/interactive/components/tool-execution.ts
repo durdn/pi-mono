@@ -11,6 +11,7 @@ const FALLBACK_PREVIEW_LINES = 10;
 export interface ToolExecutionOptions {
 	showImages?: boolean;
 	imageWidthCells?: number;
+	compactTranscript?: boolean;
 }
 
 export class ToolExecutionComponent extends Container {
@@ -42,6 +43,8 @@ export class ToolExecutionComponent extends Container {
 	};
 	private convertedImages: Map<number, { data: string; mimeType: string }> = new Map();
 	private hideComponent = false;
+	private compactTranscript: boolean;
+	private leadingSpacer: Spacer;
 
 	constructor(
 		toolName: string,
@@ -60,16 +63,21 @@ export class ToolExecutionComponent extends Container {
 		this.builtInToolDefinition = createAllToolDefinitions(cwd)[toolName as ToolName];
 		this.showImages = options.showImages ?? true;
 		this.imageWidthCells = options.imageWidthCells ?? 60;
+		this.compactTranscript = options.compactTranscript ?? false;
 		this.ui = ui;
 		this.cwd = cwd;
 
-		this.addChild(new Spacer(1));
+		this.leadingSpacer = new Spacer(1);
+		if (!this.compactTranscript) {
+			this.addChild(this.leadingSpacer);
+		}
 
 		// Always create all shell variants. contentBox is used for default renderer-based composition.
 		// selfRenderContainer is used when the tool renders its own framing.
 		// contentText is reserved for generic fallback rendering when no tool definition exists.
-		this.contentBox = new Box(1, 1, (text: string) => theme.bg("toolPendingBg", text));
-		this.contentText = new Text("", 1, 1, (text: string) => theme.bg("toolPendingBg", text));
+		const shellPadding = this.compactTranscript ? 0 : 1;
+		this.contentBox = new Box(shellPadding, shellPadding, (text: string) => theme.bg("toolPendingBg", text));
+		this.contentText = new Text("", shellPadding, shellPadding, (text: string) => theme.bg("toolPendingBg", text));
 		this.selfRenderContainer = new Container();
 
 		if (this.hasRendererDefinition()) {
@@ -222,6 +230,19 @@ export class ToolExecutionComponent extends Container {
 	setImageWidthCells(width: number): void {
 		this.imageWidthCells = Math.max(1, Math.floor(width));
 		this.updateDisplay();
+	}
+
+	setCompactTranscript(compact: boolean): void {
+		if (this.compactTranscript === compact) return;
+		this.compactTranscript = compact;
+		const shellPadding = compact ? 0 : 1;
+		this.contentBox.setPadding(shellPadding, shellPadding);
+		this.contentText.setPadding(shellPadding, shellPadding);
+		if (compact) {
+			this.removeChild(this.leadingSpacer);
+		} else {
+			this.children.unshift(this.leadingSpacer);
+		}
 	}
 
 	override invalidate(): void {

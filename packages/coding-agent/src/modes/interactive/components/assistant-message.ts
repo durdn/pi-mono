@@ -18,6 +18,7 @@ export class AssistantMessageComponent extends Container {
 	private hiddenThinkingLabel: string;
 	private outputPad: number;
 	private markdownTransformers: readonly MarkdownTransformer[];
+	private compactTranscript: boolean;
 	private lastMessage?: AssistantMessage;
 	private hasToolCalls = false;
 	private isStreaming = false;
@@ -29,6 +30,7 @@ export class AssistantMessageComponent extends Container {
 		hiddenThinkingLabel = "Thinking...",
 		outputPad = 1,
 		markdownTransformers: readonly MarkdownTransformer[] = [],
+		compactTranscript = false,
 	) {
 		super();
 
@@ -37,6 +39,7 @@ export class AssistantMessageComponent extends Container {
 		this.hiddenThinkingLabel = hiddenThinkingLabel;
 		this.outputPad = outputPad;
 		this.markdownTransformers = markdownTransformers;
+		this.compactTranscript = compactTranscript;
 
 		// Container for text/thinking content
 		this.contentContainer = new Container();
@@ -75,6 +78,13 @@ export class AssistantMessageComponent extends Container {
 		}
 	}
 
+	setCompactTranscript(compact: boolean): void {
+		this.compactTranscript = compact;
+		if (this.lastMessage) {
+			this.updateContent(this.lastMessage);
+		}
+	}
+
 	override render(width: number): string[] {
 		const lines = super.render(width);
 		if (this.hasToolCalls || lines.length === 0) {
@@ -97,7 +107,7 @@ export class AssistantMessageComponent extends Container {
 			(c) => (c.type === "text" && c.text.trim()) || (c.type === "thinking" && c.thinking.trim()),
 		);
 
-		if (hasVisibleContent) {
+		if (hasVisibleContent && !this.compactTranscript) {
 			this.contentContainer.addChild(new Spacer(1));
 		}
 

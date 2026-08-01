@@ -131,6 +131,7 @@ export interface Settings {
 	thinkingBudgets?: ThinkingBudgetsSettings; // Custom token budgets for thinking levels
 	editorPaddingX?: number; // Horizontal padding for input editor (default: 0)
 	outputPad?: 0 | 1; // Horizontal padding for chat message output (default: 1)
+	compactTranscript?: boolean; // Compact assistant and tool transcript spacing (default: false)
 	autocompleteMaxVisible?: number; // Max visible items in autocomplete dropdown (default: 5)
 	showHardwareCursor?: boolean; // Show terminal cursor while still positioning it for IME
 	markdown?: MarkdownSettings;
@@ -1330,6 +1331,16 @@ export class SettingsManager {
 	setOutputPad(padding: 0 | 1): void {
 		this.globalSettings.outputPad = padding;
 		this.markModified("outputPad");
+		this.save();
+	}
+
+	getCompactTranscript(): boolean {
+		return this.settings.compactTranscript ?? false;
+	}
+
+	setCompactTranscript(compact: boolean): void {
+		this.globalSettings.compactTranscript = compact;
+		this.markModified("compactTranscript");
 		this.save();
 	}
 
