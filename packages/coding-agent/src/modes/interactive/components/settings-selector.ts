@@ -77,6 +77,7 @@ export interface SettingsConfig {
 	editorPaddingX: number;
 	outputPad: 0 | 1;
 	compactTranscript: boolean;
+	showEditDiffs: boolean;
 	autocompleteMaxVisible: number;
 	quietStartup: boolean;
 	defaultProjectTrust: DefaultProjectTrust;
@@ -115,6 +116,7 @@ export interface SettingsCallbacks {
 	onEditorPaddingXChange: (padding: number) => void;
 	onOutputPadChange: (padding: 0 | 1) => void;
 	onCompactTranscriptChange: (compact: boolean) => void;
+	onShowEditDiffsChange: (show: boolean) => void;
 	onAutocompleteMaxVisibleChange: (maxVisible: number) => void;
 	onQuietStartupChange: (enabled: boolean) => void;
 	onDefaultProjectTrustChange: (defaultProjectTrust: DefaultProjectTrust) => void;
@@ -798,9 +800,19 @@ export class SettingsSelectorComponent extends Container {
 			values: ["true", "false"],
 		});
 
-		// Autocomplete max visible toggle (insert after compact-transcript)
+		// Edit diff visibility toggle (insert after compact-transcript)
 		const compactTranscriptIndex = items.findIndex((item) => item.id === "compact-transcript");
 		items.splice(compactTranscriptIndex + 1, 0, {
+			id: "show-edit-diffs",
+			label: "Show edit diffs",
+			description: "Show file diffs in edit tool cards",
+			currentValue: config.showEditDiffs ? "true" : "false",
+			values: ["true", "false"],
+		});
+
+		// Autocomplete max visible toggle (insert after show-edit-diffs)
+		const showEditDiffsIndex = items.findIndex((item) => item.id === "show-edit-diffs");
+		items.splice(showEditDiffsIndex + 1, 0, {
 			id: "autocomplete-max-visible",
 			label: "Autocomplete max items",
 			description: "Max visible items in autocomplete dropdown (3-20)",
@@ -915,6 +927,9 @@ export class SettingsSelectorComponent extends Container {
 						break;
 					case "compact-transcript":
 						callbacks.onCompactTranscriptChange(newValue === "true");
+						break;
+					case "show-edit-diffs":
+						callbacks.onShowEditDiffsChange(newValue === "true");
 						break;
 					case "autocomplete-max-visible":
 						callbacks.onAutocompleteMaxVisibleChange(parseInt(newValue, 10));

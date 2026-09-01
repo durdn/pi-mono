@@ -65,6 +65,7 @@ Use `/trust` in interactive mode to save a project trust decision for future ses
 | `editorPaddingX` | number | `0` | Horizontal padding for input editor (0-3) |
 | `outputPad` | number | `1` | Horizontal padding for user messages, assistant messages, and thinking (0 or 1) |
 | `compactTranscript` | boolean | `false` | Remove leading assistant/tool spacing and tool card padding |
+| `showEditDiffs` | boolean | `true` | Show file diffs in edit tool cards |
 | `autocompleteMaxVisible` | number | `5` | Max visible items in autocomplete dropdown (3-20) |
 | `showHardwareCursor` | boolean | `false` | Show the terminal cursor while TUI positions it for IME support |
 | `tuiMode` | string | `"regular"` | Interactive TUI mode: `"regular"` or experimental `"fullscreen"`. Changes from `/settings` apply immediately; `--tui-mode` overrides this setting at startup |

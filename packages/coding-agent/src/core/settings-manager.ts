@@ -132,6 +132,7 @@ export interface Settings {
 	editorPaddingX?: number; // Horizontal padding for input editor (default: 0)
 	outputPad?: 0 | 1; // Horizontal padding for chat message output (default: 1)
 	compactTranscript?: boolean; // Compact assistant and tool transcript spacing (default: false)
+	showEditDiffs?: boolean; // Show edit tool diffs in the transcript (default: true)
 	autocompleteMaxVisible?: number; // Max visible items in autocomplete dropdown (default: 5)
 	showHardwareCursor?: boolean; // Show terminal cursor while still positioning it for IME
 	markdown?: MarkdownSettings;
@@ -1341,6 +1342,16 @@ export class SettingsManager {
 	setCompactTranscript(compact: boolean): void {
 		this.globalSettings.compactTranscript = compact;
 		this.markModified("compactTranscript");
+		this.save();
+	}
+
+	getShowEditDiffs(): boolean {
+		return this.settings.showEditDiffs ?? true;
+	}
+
+	setShowEditDiffs(show: boolean): void {
+		this.globalSettings.showEditDiffs = show;
+		this.markModified("showEditDiffs");
 		this.save();
 	}
 

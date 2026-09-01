@@ -535,6 +535,21 @@ describe("SettingsManager", () => {
 		});
 	});
 
+	describe("showEditDiffs", () => {
+		it("defaults to true and persists hidden edit diffs", async () => {
+			const manager = SettingsManager.create(projectDir, agentDir);
+
+			expect(manager.getShowEditDiffs()).toBe(true);
+
+			manager.setShowEditDiffs(false);
+			await manager.flush();
+
+			expect(manager.getShowEditDiffs()).toBe(false);
+			const savedSettings = JSON.parse(readFileSync(join(agentDir, "settings.json"), "utf-8"));
+			expect(savedSettings.showEditDiffs).toBe(false);
+		});
+	});
+
 	describe("shellCommandPrefix", () => {
 		it("should load shellCommandPrefix from settings", () => {
 			const settingsPath = join(agentDir, "settings.json");

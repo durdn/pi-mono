@@ -14,6 +14,26 @@ describe("SettingsSelectorComponent", () => {
 		setKeybindings(new KeybindingsManager());
 	});
 
+	it("toggles edit diff visibility", () => {
+		const onShowEditDiffsChange = vi.fn();
+		const config = {
+			showEditDiffs: false,
+			warnings: {},
+			defaultModel: "not set",
+			availableDefaultModels: [],
+			availableThinkingLevels: [],
+			modelThinkingLevels: {},
+			availableThemes: [],
+		} as unknown as SettingsConfig;
+		const callbacks = { onShowEditDiffsChange } as unknown as SettingsCallbacks;
+		const list = new SettingsSelectorComponent(config, callbacks).getSettingsList();
+		for (const character of "Show edit diffs") list.handleInput(character);
+		list.handleInput("\r");
+		list.handleInput("\r");
+
+		expect(onShowEditDiffsChange.mock.calls.flat()).toEqual([true, false]);
+	});
+
 	it("cycles through fullscreen settings", () => {
 		const onExitOutputChange = vi.fn();
 		const onScrollbarChange = vi.fn();

@@ -3282,6 +3282,7 @@ export class InteractiveMode {
 										showImages: this.settingsManager.getShowImages(),
 										imageWidthCells: this.settingsManager.getImageWidthCells(),
 										compactTranscript: this.compactTranscript,
+										showEditDiffs: this.settingsManager.getShowEditDiffs(),
 									},
 									this.getRegisteredToolDefinition(content.name),
 									this.ui,
@@ -3357,6 +3358,7 @@ export class InteractiveMode {
 							showImages: this.settingsManager.getShowImages(),
 							imageWidthCells: this.settingsManager.getImageWidthCells(),
 							compactTranscript: this.compactTranscript,
+							showEditDiffs: this.settingsManager.getShowEditDiffs(),
 						},
 						this.getRegisteredToolDefinition(event.toolName),
 						this.ui,
@@ -3752,6 +3754,7 @@ export class InteractiveMode {
 								showImages: this.settingsManager.getShowImages(),
 								imageWidthCells: this.settingsManager.getImageWidthCells(),
 								compactTranscript: this.compactTranscript,
+								showEditDiffs: this.settingsManager.getShowEditDiffs(),
 							},
 							this.getRegisteredToolDefinition(content.name),
 							this.ui,
@@ -4590,6 +4593,7 @@ export class InteractiveMode {
 					editorPaddingX: this.settingsManager.getEditorPaddingX(),
 					outputPad: this.settingsManager.getOutputPad(),
 					compactTranscript: this.settingsManager.getCompactTranscript(),
+					showEditDiffs: this.settingsManager.getShowEditDiffs(),
 					autocompleteMaxVisible: this.settingsManager.getAutocompleteMaxVisible(),
 					quietStartup: this.settingsManager.getQuietStartup(),
 					clearOnShrink: this.settingsManager.getClearOnShrink(),
@@ -4748,6 +4752,15 @@ export class InteractiveMode {
 						}
 						if (this.streamingComponent) {
 							this.streamingComponent.setCompactTranscript(compact);
+						}
+						this.ui.requestRender();
+					},
+					onShowEditDiffsChange: (show) => {
+						this.settingsManager.setShowEditDiffs(show);
+						for (const child of this.chatContainer.children) {
+							if (child instanceof ToolExecutionComponent) {
+								child.setShowEditDiffs(show);
+							}
 						}
 						this.ui.requestRender();
 					},

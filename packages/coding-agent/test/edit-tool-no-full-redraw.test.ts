@@ -198,6 +198,56 @@ describe("edit tool TUI rendering", () => {
 		expect(rendered).toContain("line 150 changed");
 	});
 
+	it("hides preview and settled diffs when edit diff display is disabled", async () => {
+		const dir = await mkdtemp(join(tmpdir(), "pi-edit-hidden-diff-"));
+		tempDirs.push(dir);
+		const filePath = join(dir, "hidden-edit.txt");
+		await writeFile(filePath, "before-hidden-diff\n", "utf8");
+		const edits = [{ oldText: "before-hidden-diff", newText: "after-hidden-diff" }];
+		const diff = await computeEditsDiff(filePath, edits, process.cwd());
+		if ("error" in diff) {
+			throw new Error(diff.error);
+		}
+
+		const component = new ToolExecutionComponent(
+			"edit",
+			"tool-call-hidden-diff",
+			{ path: filePath, edits },
+			{ showEditDiffs: false },
+			createEditToolDefinition(process.cwd()),
+			new TuiMainScreen(new FakeTerminal()),
+			process.cwd(),
+		);
+		component.setArgsComplete();
+		await waitForRender();
+		await waitForRender();
+
+		const previewRender = component.render(80).join("\n");
+		expect(previewRender).toContain("edit");
+		expect(previewRender).toContain("hidden-edit.txt");
+		expect(previewRender).not.toContain("before-hidden-diff");
+		expect(previewRender).not.toContain("after-hidden-diff");
+
+		component.setShowEditDiffs(true);
+		await waitForRenderedText(() => component.render(80).join("\n"), "after-hidden-diff");
+		component.setShowEditDiffs(false);
+		expect(component.render(80).join("\n")).not.toContain("after-hidden-diff");
+
+		component.updateResult(
+			{
+				content: [{ type: "text", text: "Successfully replaced 1 block(s) in hidden-edit.txt." }],
+				details: diff,
+				isError: false,
+			},
+			false,
+		);
+		const settledRender = component.render(80).join("\n");
+		expect(settledRender).toContain("edit");
+		expect(settledRender).not.toContain("before-hidden-diff");
+		expect(settledRender).not.toContain("after-hidden-diff");
+		expect(settledRender).not.toContain("Successfully replaced");
+	});
+
 	it("shows a preflight error without rendering a diff when the edits do not apply", async () => {
 		const dir = await mkdtemp(join(tmpdir(), "pi-edit-preflight-"));
 		tempDirs.push(dir);

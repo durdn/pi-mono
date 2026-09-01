@@ -232,6 +232,7 @@ function formatEditResult(
 	result: EditToolResultLike,
 	theme: Theme,
 	isError: boolean,
+	showEditDiffs: boolean,
 ): string | undefined {
 	const rawPath = str(args?.file_path ?? args?.path);
 	const previewDiff = preview && !("error" in preview) ? preview.diff : undefined;
@@ -248,7 +249,7 @@ function formatEditResult(
 	}
 
 	const resultDiff = result.details?.diff;
-	if (resultDiff && resultDiff !== previewDiff) {
+	if (showEditDiffs && resultDiff && resultDiff !== previewDiff) {
 		return renderDiff(resultDiff, { filePath: rawPath ?? undefined });
 	}
 
@@ -277,12 +278,13 @@ function buildEditCallComponent(
 	args: RenderableEditArgs | undefined,
 	theme: Theme,
 	cwd: string,
+	showEditDiffs: boolean,
 ): EditCallRenderComponent {
 	component.setBgFn(getEditHeaderBg(component.preview, component.settledError, theme));
 	component.clear();
 	component.addChild(new Text(formatEditCall(args, theme, cwd), 0, 0));
 
-	if (!component.preview) {
+	if (!component.preview || (!showEditDiffs && !("error" in component.preview))) {
 		return component;
 	}
 
@@ -409,7 +411,7 @@ export function createEditToolDefinition(
 				});
 			}
 
-			return buildEditCallComponent(component, args, theme, context.cwd);
+			return buildEditCallComponent(component, args, theme, context.cwd, context.showEditDiffs);
 		},
 		renderResult(result, _options, theme, context) {
 			const callComponent = context.state.callComponent;
@@ -439,11 +441,19 @@ export function createEditToolDefinition(
 						context.args as RenderableEditArgs | undefined,
 						theme,
 						context.cwd,
+						context.showEditDiffs,
 					);
 				}
 			}
 
-			const output = formatEditResult(context.args, callComponent?.preview, typedResult, theme, context.isError);
+			const output = formatEditResult(
+				context.args,
+				callComponent?.preview,
+				typedResult,
+				theme,
+				context.isError,
+				context.showEditDiffs,
+			);
 			const component = (context.lastComponent as Container | undefined) ?? new Container();
 			component.clear();
 			if (!output) {

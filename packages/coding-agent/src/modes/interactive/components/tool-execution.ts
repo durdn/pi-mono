@@ -12,6 +12,7 @@ export interface ToolExecutionOptions {
 	showImages?: boolean;
 	imageWidthCells?: number;
 	compactTranscript?: boolean;
+	showEditDiffs?: boolean;
 }
 
 export class ToolExecutionComponent extends Container {
@@ -28,6 +29,7 @@ export class ToolExecutionComponent extends Container {
 	private args: any;
 	private expanded = false;
 	private showImages: boolean;
+	private showEditDiffs: boolean;
 	private imageWidthCells: number;
 	private isPartial = true;
 	private toolDefinition?: ToolDefinition<any, any>;
@@ -62,6 +64,7 @@ export class ToolExecutionComponent extends Container {
 		this.toolDefinition = toolDefinition;
 		this.builtInToolDefinition = createAllToolDefinitions(cwd)[toolName as ToolName];
 		this.showImages = options.showImages ?? true;
+		this.showEditDiffs = options.showEditDiffs ?? true;
 		this.imageWidthCells = options.imageWidthCells ?? 60;
 		this.compactTranscript = options.compactTranscript ?? false;
 		this.ui = ui;
@@ -139,6 +142,7 @@ export class ToolExecutionComponent extends Container {
 			isPartial: this.isPartial,
 			expanded: this.expanded,
 			showImages: this.showImages,
+			showEditDiffs: this.showEditDiffs,
 			isError: this.result?.isError ?? false,
 		};
 	}
@@ -224,6 +228,11 @@ export class ToolExecutionComponent extends Container {
 
 	setShowImages(show: boolean): void {
 		this.showImages = show;
+		this.updateDisplay();
+	}
+
+	setShowEditDiffs(show: boolean): void {
+		this.showEditDiffs = show;
 		this.updateDisplay();
 	}
 
