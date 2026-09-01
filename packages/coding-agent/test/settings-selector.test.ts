@@ -14,10 +14,14 @@ describe("SettingsSelectorComponent", () => {
 		setKeybindings(new KeybindingsManager());
 	});
 
-	it("toggles edit diff visibility", () => {
+	it("toggles tool content visibility", () => {
+		const onShowReadContentChange = vi.fn();
 		const onShowEditDiffsChange = vi.fn();
+		const onShowWriteContentChange = vi.fn();
 		const config = {
+			showReadContent: false,
 			showEditDiffs: false,
+			showWriteContent: false,
 			warnings: {},
 			defaultModel: "not set",
 			availableDefaultModels: [],
@@ -25,13 +29,26 @@ describe("SettingsSelectorComponent", () => {
 			modelThinkingLevels: {},
 			availableThemes: [],
 		} as unknown as SettingsConfig;
-		const callbacks = { onShowEditDiffsChange } as unknown as SettingsCallbacks;
-		const list = new SettingsSelectorComponent(config, callbacks).getSettingsList();
-		for (const character of "Show edit diffs") list.handleInput(character);
-		list.handleInput("\r");
-		list.handleInput("\r");
+		const callbacks = {
+			onShowReadContentChange,
+			onShowEditDiffsChange,
+			onShowWriteContentChange,
+		} as unknown as SettingsCallbacks;
 
+		const toggle = (label: string) => {
+			const list = new SettingsSelectorComponent(config, callbacks).getSettingsList();
+			for (const character of label) list.handleInput(character);
+			list.handleInput("\r");
+			list.handleInput("\r");
+		};
+
+		toggle("Show read content");
+		toggle("Show edit diffs");
+		toggle("Show write content");
+
+		expect(onShowReadContentChange.mock.calls.flat()).toEqual([true, false]);
 		expect(onShowEditDiffsChange.mock.calls.flat()).toEqual([true, false]);
+		expect(onShowWriteContentChange.mock.calls.flat()).toEqual([true, false]);
 	});
 
 	it("cycles through fullscreen settings", () => {

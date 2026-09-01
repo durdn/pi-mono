@@ -441,8 +441,12 @@ export interface ToolRenderContext<TState = any, TArgs = any> {
 	expanded: boolean;
 	/** Whether inline images are currently shown in the TUI. */
 	showImages: boolean;
+	/** Whether read content is currently shown in the TUI. */
+	showReadContent: boolean;
 	/** Whether edit diffs are currently shown in the TUI. */
 	showEditDiffs: boolean;
+	/** Whether write content is currently shown in the TUI. */
+	showWriteContent: boolean;
 	/** Whether the current result is an error. */
 	isError: boolean;
 }

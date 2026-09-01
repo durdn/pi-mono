@@ -535,18 +535,26 @@ describe("SettingsManager", () => {
 		});
 	});
 
-	describe("showEditDiffs", () => {
-		it("defaults to true and persists hidden edit diffs", async () => {
+	describe("tool content visibility", () => {
+		it("defaults to visible and persists hidden read, edit, and write content", async () => {
 			const manager = SettingsManager.create(projectDir, agentDir);
 
+			expect(manager.getShowReadContent()).toBe(true);
 			expect(manager.getShowEditDiffs()).toBe(true);
+			expect(manager.getShowWriteContent()).toBe(true);
 
+			manager.setShowReadContent(false);
 			manager.setShowEditDiffs(false);
+			manager.setShowWriteContent(false);
 			await manager.flush();
 
+			expect(manager.getShowReadContent()).toBe(false);
 			expect(manager.getShowEditDiffs()).toBe(false);
+			expect(manager.getShowWriteContent()).toBe(false);
 			const savedSettings = JSON.parse(readFileSync(join(agentDir, "settings.json"), "utf-8"));
+			expect(savedSettings.showReadContent).toBe(false);
 			expect(savedSettings.showEditDiffs).toBe(false);
+			expect(savedSettings.showWriteContent).toBe(false);
 		});
 	});
 

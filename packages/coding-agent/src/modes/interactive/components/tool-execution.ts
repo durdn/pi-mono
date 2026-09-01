@@ -12,7 +12,9 @@ export interface ToolExecutionOptions {
 	showImages?: boolean;
 	imageWidthCells?: number;
 	compactTranscript?: boolean;
+	showReadContent?: boolean;
 	showEditDiffs?: boolean;
+	showWriteContent?: boolean;
 }
 
 export class ToolExecutionComponent extends Container {
@@ -29,7 +31,9 @@ export class ToolExecutionComponent extends Container {
 	private args: any;
 	private expanded = false;
 	private showImages: boolean;
+	private showReadContent: boolean;
 	private showEditDiffs: boolean;
+	private showWriteContent: boolean;
 	private imageWidthCells: number;
 	private isPartial = true;
 	private toolDefinition?: ToolDefinition<any, any>;
@@ -64,7 +68,9 @@ export class ToolExecutionComponent extends Container {
 		this.toolDefinition = toolDefinition;
 		this.builtInToolDefinition = createAllToolDefinitions(cwd)[toolName as ToolName];
 		this.showImages = options.showImages ?? true;
+		this.showReadContent = options.showReadContent ?? true;
 		this.showEditDiffs = options.showEditDiffs ?? true;
+		this.showWriteContent = options.showWriteContent ?? true;
 		this.imageWidthCells = options.imageWidthCells ?? 60;
 		this.compactTranscript = options.compactTranscript ?? false;
 		this.ui = ui;
@@ -142,7 +148,9 @@ export class ToolExecutionComponent extends Container {
 			isPartial: this.isPartial,
 			expanded: this.expanded,
 			showImages: this.showImages,
+			showReadContent: this.showReadContent,
 			showEditDiffs: this.showEditDiffs,
+			showWriteContent: this.showWriteContent,
 			isError: this.result?.isError ?? false,
 		};
 	}
@@ -231,8 +239,18 @@ export class ToolExecutionComponent extends Container {
 		this.updateDisplay();
 	}
 
+	setShowReadContent(show: boolean): void {
+		this.showReadContent = show;
+		this.updateDisplay();
+	}
+
 	setShowEditDiffs(show: boolean): void {
 		this.showEditDiffs = show;
+		this.updateDisplay();
+	}
+
+	setShowWriteContent(show: boolean): void {
+		this.showWriteContent = show;
 		this.updateDisplay();
 	}
 
@@ -373,7 +391,13 @@ export class ToolExecutionComponent extends Container {
 			const caps = getCapabilities();
 			for (let i = 0; i < imageBlocks.length; i++) {
 				const img = imageBlocks[i];
-				if (caps.images && this.showImages && img.data && img.mimeType) {
+				if (
+					caps.images &&
+					this.showImages &&
+					(this.toolName !== "read" || this.showReadContent) &&
+					img.data &&
+					img.mimeType
+				) {
 					const converted = this.convertedImages.get(i);
 					const imageData = converted?.data ?? img.data;
 					const imageMimeType = converted?.mimeType ?? img.mimeType;

@@ -140,6 +140,7 @@ function formatWriteCall(
 	theme: Theme,
 	cache: WriteHighlightCache | undefined,
 	cwd: string,
+	showWriteContent: boolean,
 ): string {
 	const rawPath = str(args?.file_path ?? args?.path);
 	const fileContent = str(args?.content);
@@ -148,7 +149,7 @@ function formatWriteCall(
 
 	if (fileContent === null) {
 		text += `\n\n${theme.fg("error", "[invalid content arg - expected string]")}`;
-	} else if (fileContent) {
+	} else if (fileContent && showWriteContent) {
 		const lang = rawPath ? getLanguageFromPath(rawPath) : undefined;
 		const renderedLines = lang
 			? (cache?.highlightedLines ?? highlightCode(replaceTabs(normalizeDisplayText(fileContent)), lang))
@@ -251,6 +252,7 @@ export function createWriteToolDefinition(
 					theme,
 					component.cache,
 					context.cwd,
+					context.showWriteContent,
 				),
 			);
 			return component;

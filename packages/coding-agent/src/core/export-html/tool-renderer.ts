@@ -91,7 +91,9 @@ export function createToolHtmlRenderer(deps: ToolHtmlRendererDeps): ToolHtmlRend
 			isPartial,
 			expanded,
 			showImages: false,
+			showReadContent: true,
 			showEditDiffs: true,
+			showWriteContent: true,
 			isError,
 		};
 	};

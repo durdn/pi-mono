@@ -3282,7 +3282,9 @@ export class InteractiveMode {
 										showImages: this.settingsManager.getShowImages(),
 										imageWidthCells: this.settingsManager.getImageWidthCells(),
 										compactTranscript: this.compactTranscript,
+										showReadContent: this.settingsManager.getShowReadContent(),
 										showEditDiffs: this.settingsManager.getShowEditDiffs(),
+										showWriteContent: this.settingsManager.getShowWriteContent(),
 									},
 									this.getRegisteredToolDefinition(content.name),
 									this.ui,
@@ -3358,7 +3360,9 @@ export class InteractiveMode {
 							showImages: this.settingsManager.getShowImages(),
 							imageWidthCells: this.settingsManager.getImageWidthCells(),
 							compactTranscript: this.compactTranscript,
+							showReadContent: this.settingsManager.getShowReadContent(),
 							showEditDiffs: this.settingsManager.getShowEditDiffs(),
+							showWriteContent: this.settingsManager.getShowWriteContent(),
 						},
 						this.getRegisteredToolDefinition(event.toolName),
 						this.ui,
@@ -3754,7 +3758,9 @@ export class InteractiveMode {
 								showImages: this.settingsManager.getShowImages(),
 								imageWidthCells: this.settingsManager.getImageWidthCells(),
 								compactTranscript: this.compactTranscript,
+								showReadContent: this.settingsManager.getShowReadContent(),
 								showEditDiffs: this.settingsManager.getShowEditDiffs(),
+								showWriteContent: this.settingsManager.getShowWriteContent(),
 							},
 							this.getRegisteredToolDefinition(content.name),
 							this.ui,
@@ -4593,7 +4599,9 @@ export class InteractiveMode {
 					editorPaddingX: this.settingsManager.getEditorPaddingX(),
 					outputPad: this.settingsManager.getOutputPad(),
 					compactTranscript: this.settingsManager.getCompactTranscript(),
+					showReadContent: this.settingsManager.getShowReadContent(),
 					showEditDiffs: this.settingsManager.getShowEditDiffs(),
+					showWriteContent: this.settingsManager.getShowWriteContent(),
 					autocompleteMaxVisible: this.settingsManager.getAutocompleteMaxVisible(),
 					quietStartup: this.settingsManager.getQuietStartup(),
 					clearOnShrink: this.settingsManager.getClearOnShrink(),
@@ -4755,11 +4763,29 @@ export class InteractiveMode {
 						}
 						this.ui.requestRender();
 					},
+					onShowReadContentChange: (show) => {
+						this.settingsManager.setShowReadContent(show);
+						for (const child of this.chatContainer.children) {
+							if (child instanceof ToolExecutionComponent) {
+								child.setShowReadContent(show);
+							}
+						}
+						this.ui.requestRender();
+					},
 					onShowEditDiffsChange: (show) => {
 						this.settingsManager.setShowEditDiffs(show);
 						for (const child of this.chatContainer.children) {
 							if (child instanceof ToolExecutionComponent) {
 								child.setShowEditDiffs(show);
+							}
+						}
+						this.ui.requestRender();
+					},
+					onShowWriteContentChange: (show) => {
+						this.settingsManager.setShowWriteContent(show);
+						for (const child of this.chatContainer.children) {
+							if (child instanceof ToolExecutionComponent) {
+								child.setShowWriteContent(show);
 							}
 						}
 						this.ui.requestRender();

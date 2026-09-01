@@ -173,10 +173,11 @@ function formatReadResult(
 	options: ToolRenderResultOptions,
 	theme: Theme,
 	showImages: boolean,
+	showReadContent: boolean,
 	_cwd: string,
 	isError: boolean,
 ): string {
-	if (!options.expanded && !isError) {
+	if ((!showReadContent || !options.expanded) && !isError) {
 		return "";
 	}
 
@@ -346,7 +347,16 @@ export function createReadToolDefinition(
 		renderResult(result, options, theme, context) {
 			const text = (context.lastComponent as Text | undefined) ?? new Text("", 0, 0);
 			text.setText(
-				formatReadResult(context.args, result, options, theme, context.showImages, context.cwd, context.isError),
+				formatReadResult(
+					context.args,
+					result,
+					options,
+					theme,
+					context.showImages,
+					context.showReadContent,
+					context.cwd,
+					context.isError,
+				),
 			);
 			return text;
 		},

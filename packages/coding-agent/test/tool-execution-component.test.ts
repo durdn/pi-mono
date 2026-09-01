@@ -1,5 +1,5 @@
 import { join, resolve } from "node:path";
-import { Text, type TUI } from "@earendil-works/pi-tui";
+import { getCapabilities, setCapabilities, Text, type TUI } from "@earendil-works/pi-tui";
 import { Type } from "typebox";
 import { beforeAll, describe, expect, test } from "vitest";
 import { getReadmePath } from "../src/config.ts";
@@ -340,6 +340,27 @@ describe("ToolExecutionComponent parity", () => {
 		expect(rendered).toContain("custom result shared-token");
 	});
 
+	test("propagates read and write visibility to extension renderers", () => {
+		const definition = createBaseToolDefinition();
+		definition.renderCall = (_args, _theme, context) =>
+			new Text(`${context.showReadContent}:${context.showWriteContent}`, 0, 0);
+		const component = new ToolExecutionComponent(
+			"custom_tool",
+			"tool-context-visibility",
+			{},
+			{ showReadContent: false, showWriteContent: false },
+			definition,
+			createFakeTui(),
+			process.cwd(),
+		);
+
+		expect(stripAnsi(component.render(120).join("\n"))).toContain("false:false");
+
+		component.setShowReadContent(true);
+		component.setShowWriteContent(true);
+		expect(stripAnsi(component.render(120).join("\n"))).toContain("true:true");
+	});
+
 	test("exposes args in render result context", () => {
 		const toolDefinition: ToolDefinition = {
 			...createBaseToolDefinition(),
@@ -408,6 +429,39 @@ describe("ToolExecutionComponent parity", () => {
 		expect(rendered).not.toContain("two\n\n");
 	});
 
+	test("hides write content while preserving headers and errors", () => {
+		const component = new ToolExecutionComponent(
+			"write",
+			"tool-write-content-hidden",
+			{ path: "notes.txt", content: "hidden write content" },
+			{ showWriteContent: false },
+			createWriteToolDefinition(process.cwd()),
+			createFakeTui(),
+			process.cwd(),
+		);
+
+		const hidden = stripAnsi(component.render(120).join("\n"));
+		expect(hidden).toContain("write");
+		expect(hidden).toContain("notes.txt");
+		expect(hidden).not.toContain("hidden write content");
+
+		component.updateArgs({ path: "notes.txt", content: "latest hidden write content" });
+		component.setShowWriteContent(true);
+		const visible = stripAnsi(component.render(120).join("\n"));
+		expect(visible).toContain("latest hidden write content");
+		expect(visible).not.toContain("\nhidden write content");
+
+		component.setShowWriteContent(false);
+		component.updateArgs({ path: "notes.txt", content: 42 });
+		expect(stripAnsi(component.render(120).join("\n"))).toContain("invalid content arg");
+
+		component.updateResult(
+			{ content: [{ type: "text", text: "write failed" }], details: undefined, isError: true },
+			false,
+		);
+		expect(stripAnsi(component.render(120).join("\n"))).toContain("write failed");
+	});
+
 	test("trims trailing blank display lines from read results", () => {
 		const component = new ToolExecutionComponent(
 			"read",
@@ -470,6 +524,75 @@ describe("ToolExecutionComponent parity", () => {
 		component.setExpanded(true);
 		const expanded = stripAnsi(component.render(120).join("\n"));
 		expect(expanded).toContain("hidden content");
+	});
+
+	test("hides expanded read content while preserving headers and errors", () => {
+		const component = new ToolExecutionComponent(
+			"read",
+			"tool-read-content-hidden",
+			{ path: "notes.txt" },
+			{ showReadContent: false },
+			createReadToolDefinition(process.cwd()),
+			createFakeTui(),
+			process.cwd(),
+		);
+		component.updateResult(
+			{ content: [{ type: "text", text: "hidden read content" }], details: undefined, isError: false },
+			false,
+		);
+		component.setExpanded(true);
+
+		const hidden = stripAnsi(component.render(120).join("\n"));
+		expect(hidden).toContain("read");
+		expect(hidden).toContain("notes.txt");
+		expect(hidden).not.toContain("hidden read content");
+
+		component.setShowReadContent(true);
+		expect(stripAnsi(component.render(120).join("\n"))).toContain("hidden read content");
+
+		component.setShowReadContent(false);
+		component.updateResult(
+			{ content: [{ type: "text", text: "read failed" }], details: undefined, isError: true },
+			false,
+		);
+		expect(stripAnsi(component.render(120).join("\n"))).toContain("read failed");
+	});
+
+	test("hides read images with read content", () => {
+		const previousCapabilities = getCapabilities();
+		const imageData =
+			"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAFgwJ/lMOvWQAAAABJRU5ErkJggg==";
+		setCapabilities({ ...previousCapabilities, images: "iterm2" });
+		try {
+			const component = new ToolExecutionComponent(
+				"read",
+				"tool-read-image-hidden",
+				{ path: "pixel.png" },
+				{ showReadContent: false, showImages: true },
+				createReadToolDefinition(process.cwd()),
+				createFakeTui(),
+				process.cwd(),
+			);
+			component.updateResult(
+				{
+					content: [
+						{ type: "text", text: "Read image file [image/png]" },
+						{ type: "image", data: imageData, mimeType: "image/png" },
+					],
+					details: undefined,
+					isError: false,
+				},
+				false,
+			);
+			component.setExpanded(true);
+
+			expect(component.render(120).join("\n")).not.toContain(imageData);
+
+			component.setShowReadContent(true);
+			expect(component.render(120).join("\n")).toContain(imageData);
+		} finally {
+			setCapabilities(previousCapabilities);
+		}
 	});
 
 	for (const scenario of [

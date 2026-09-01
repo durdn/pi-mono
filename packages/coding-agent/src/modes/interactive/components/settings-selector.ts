@@ -77,7 +77,9 @@ export interface SettingsConfig {
 	editorPaddingX: number;
 	outputPad: 0 | 1;
 	compactTranscript: boolean;
+	showReadContent: boolean;
 	showEditDiffs: boolean;
+	showWriteContent: boolean;
 	autocompleteMaxVisible: number;
 	quietStartup: boolean;
 	defaultProjectTrust: DefaultProjectTrust;
@@ -116,7 +118,9 @@ export interface SettingsCallbacks {
 	onEditorPaddingXChange: (padding: number) => void;
 	onOutputPadChange: (padding: 0 | 1) => void;
 	onCompactTranscriptChange: (compact: boolean) => void;
+	onShowReadContentChange: (show: boolean) => void;
 	onShowEditDiffsChange: (show: boolean) => void;
+	onShowWriteContentChange: (show: boolean) => void;
 	onAutocompleteMaxVisibleChange: (maxVisible: number) => void;
 	onQuietStartupChange: (enabled: boolean) => void;
 	onDefaultProjectTrustChange: (defaultProjectTrust: DefaultProjectTrust) => void;
@@ -800,9 +804,19 @@ export class SettingsSelectorComponent extends Container {
 			values: ["true", "false"],
 		});
 
-		// Edit diff visibility toggle (insert after compact-transcript)
+		// Read content visibility toggle (insert after compact-transcript)
 		const compactTranscriptIndex = items.findIndex((item) => item.id === "compact-transcript");
 		items.splice(compactTranscriptIndex + 1, 0, {
+			id: "show-read-content",
+			label: "Show read content",
+			description: "Show file content in expanded read tool cards",
+			currentValue: config.showReadContent ? "true" : "false",
+			values: ["true", "false"],
+		});
+
+		// Edit diff visibility toggle (insert after show-read-content)
+		const showReadContentIndex = items.findIndex((item) => item.id === "show-read-content");
+		items.splice(showReadContentIndex + 1, 0, {
 			id: "show-edit-diffs",
 			label: "Show edit diffs",
 			description: "Show file diffs in edit tool cards",
@@ -810,9 +824,19 @@ export class SettingsSelectorComponent extends Container {
 			values: ["true", "false"],
 		});
 
-		// Autocomplete max visible toggle (insert after show-edit-diffs)
+		// Write content visibility toggle (insert after show-edit-diffs)
 		const showEditDiffsIndex = items.findIndex((item) => item.id === "show-edit-diffs");
 		items.splice(showEditDiffsIndex + 1, 0, {
+			id: "show-write-content",
+			label: "Show write content",
+			description: "Show file content previews in write tool cards",
+			currentValue: config.showWriteContent ? "true" : "false",
+			values: ["true", "false"],
+		});
+
+		// Autocomplete max visible toggle (insert after show-write-content)
+		const showWriteContentIndex = items.findIndex((item) => item.id === "show-write-content");
+		items.splice(showWriteContentIndex + 1, 0, {
 			id: "autocomplete-max-visible",
 			label: "Autocomplete max items",
 			description: "Max visible items in autocomplete dropdown (3-20)",
@@ -928,8 +952,14 @@ export class SettingsSelectorComponent extends Container {
 					case "compact-transcript":
 						callbacks.onCompactTranscriptChange(newValue === "true");
 						break;
+					case "show-read-content":
+						callbacks.onShowReadContentChange(newValue === "true");
+						break;
 					case "show-edit-diffs":
 						callbacks.onShowEditDiffsChange(newValue === "true");
+						break;
+					case "show-write-content":
+						callbacks.onShowWriteContentChange(newValue === "true");
 						break;
 					case "autocomplete-max-visible":
 						callbacks.onAutocompleteMaxVisibleChange(parseInt(newValue, 10));
